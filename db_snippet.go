@@ -22,6 +22,7 @@ func SaveSnippet(snippet *Snippet) (err error) {
 	}
 
 	// snippet name is assumed to be unique
+	// need to create dir
 	//if err = ioutil.WriteFile(fmt.Sprintf("%s/%s.json", dbLocation, "test"), file, 0644); err != nil {
 	klog.Info(*snippet)
 	if err = ioutil.WriteFile(snippet.name, file, 0644); err != nil {
