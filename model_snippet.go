@@ -8,9 +8,9 @@ const (
 )
 
 type SnippetInput struct {
-	name string
-	expires_in int
-	snippet string
+	Name       string `json:"name,omitempty"`
+	Expires_in int    `json:"expires_in,omitempty"`
+	Snippet    string `json:"snippet,omitempty"`
 }
 
 type Snippet struct {

@@ -12,7 +12,7 @@ func CreateRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	router.POST("/snippets/", InsertSnippet)
+	router.POST("/snippets", InsertSnippet)
 	router.GET("/snippets/:snippet", GetSnippet)
 
 	return router

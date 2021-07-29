@@ -26,10 +26,10 @@ func ValidateInsertSnippetInput(c *gin.Context, snippet *SnippetInput) (err erro
 
 func InsertSnippet(c *gin.Context) {
 
-	var snippetInput SnippetInput
+	snippetInput := new(SnippetInput)
 
 	// Validate input
-	if err := c.BindJSON(&snippetInput); err != nil {
+	if err := c.Bind(snippetInput); err != nil {
 		klog.Error(err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -38,11 +38,14 @@ func InsertSnippet(c *gin.Context) {
 	// Save full snippet url
 
 	snippet := Snippet{
-		name: snippetInput.name,
+		name: snippetInput.Name,
 		expires_at: time.Now().Add(extensionExpiryDuration),
-		snippet: snippetInput.snippet,
-		url: fmt.Sprintf("%s/%s", snippetsUrl, snippetInput.name),
+		snippet: snippetInput.Snippet,
+		url: fmt.Sprintf("%s/%s", snippetsUrl, snippetInput.Name),
 	}
+
+	klog.Info(snippetInput)
+	klog.Info(snippet)
 
 	// Insert into db/save to disk
 
