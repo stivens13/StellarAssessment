@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"k8s.io/klog/v2"
+	"os"
 )
 
 // this is implementation of option #1 of features to implement
@@ -14,18 +16,23 @@ import (
 
 const dbLocation = "localDb"
 
+func init() {
+	if _, err := os.Stat(dbLocation); os.IsNotExist(err) {
+		if err := os.MkdirAll(dbLocation, 0700); err != nil {
+			klog.Error(err)
+		}
+	}
+}
+
 func SaveSnippet(snippet *Snippet) (err error) {
-	file, err := json.MarshalIndent(*snippet, "", " ")
+	file, err := json.Marshal(snippet)
 	if err != nil {
 		klog.Error(err)
 		return err
 	}
 
 	// snippet name is assumed to be unique
-	// need to create dir
-	//if err = ioutil.WriteFile(fmt.Sprintf("%s/%s.json", dbLocation, "test"), file, 0644); err != nil {
-	klog.Info(*snippet)
-	if err = ioutil.WriteFile(snippet.name, file, 0644); err != nil {
+	if err = ioutil.WriteFile(fmt.Sprintf("%s/%s.json", dbLocation, snippet.Name), file, 0644); err != nil {
 		klog.Error(err)
 		return err
 	}
@@ -33,14 +40,15 @@ func SaveSnippet(snippet *Snippet) (err error) {
 	return nil
 }
 
-func ReadSnippet(snippetName string) (snippet *Snippet, err error) {
+func ReadSnippet(snippetName string) (*Snippet, error) {
 
-	//data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.json", dbLocation, snippetName))
-	data, err := ioutil.ReadFile(snippetName)
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s.json", dbLocation, snippetName))
 	if err != nil {
 		klog.Error(err)
 		return nil, err
 	}
+
+	snippet := &Snippet{}
 
 	if err = json.Unmarshal(data, snippet); err != nil {
 		klog.Error(err)
@@ -52,15 +60,7 @@ func ReadSnippet(snippetName string) (snippet *Snippet, err error) {
 
 // assume expiration time is extended by 30 seconds from existing expiry time
 
-func UpdateSnippetExpiry(snippetName string) {
-
-	snippet, err := ReadSnippet(snippetName)
-	if err != nil {
-		klog.Error(err)
-		return
-	}
-
-	snippet.expires_at.Add(extensionExpiryDuration)
+func UpdateSnippetExpiry(snippet *Snippet) {
 
 	if err := SaveSnippet(snippet); err != nil {
 		klog.Error(err)
@@ -69,5 +69,7 @@ func UpdateSnippetExpiry(snippetName string) {
 }
 
 func DeleteSnippet(snippetName string) {
-
+	if err := os.Remove(fmt.Sprintf("%s/%s.json", dbLocation, snippetName)); err != nil {
+		klog.Info(err)
+	}
 }

@@ -14,8 +14,8 @@ type SnippetInput struct {
 }
 
 type Snippet struct {
-	url string
-	name string
-	expires_at time.Time
-	snippet string
+	Url        string    `json:"url,omitempty"`
+	Name       string    `json:"name,omitempty"`
+	Expires_at time.Time `json:"expires_at,omitempty"`
+	Snippet    string    `json:"snippet,omitempty"`
 }

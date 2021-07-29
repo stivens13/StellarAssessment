@@ -38,14 +38,11 @@ func InsertSnippet(c *gin.Context) {
 	// Save full snippet url
 
 	snippet := Snippet{
-		name: snippetInput.Name,
-		expires_at: time.Now().Add(extensionExpiryDuration),
-		snippet: snippetInput.Snippet,
-		url: fmt.Sprintf("%s/%s", snippetsUrl, snippetInput.Name),
+		Name:       snippetInput.Name,
+		Expires_at: time.Now().Add(extensionExpiryDuration),
+		Snippet:    snippetInput.Snippet,
+		Url:        fmt.Sprintf("%s/%s.json", snippetsUrl, snippetInput.Name),
 	}
-
-	klog.Info(snippetInput)
-	klog.Info(snippet)
 
 	// Insert into db/save to disk
 
@@ -76,7 +73,7 @@ func GetSnippet(c *gin.Context) {
 
 	if snippet, err = ReadSnippet(snippetName); err != nil {
 		// If not exists or snippet expired, return 404
-		if snippet != nil && snippet.expires_at.Before(time.Now()) {
+		if snippet != nil && snippet.Expires_at.Before(time.Now()) {
 			DeleteSnippet(snippetName)
 		}
 
@@ -84,9 +81,16 @@ func GetSnippet(c *gin.Context) {
 		return
 	}
 
+	if snippet != nil && snippet.Expires_at.Before(time.Now()) {
+		DeleteSnippet(snippetName)
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	snippet.Expires_at = snippet.Expires_at.Add(extensionExpiryDuration)
 
 	// add +30 seconds to expiration
-	UpdateSnippetExpiry(snippetName)
+	UpdateSnippetExpiry(snippet)
 
 	// return 200 and snippet
 	c.JSON(http.StatusOK, snippet)
