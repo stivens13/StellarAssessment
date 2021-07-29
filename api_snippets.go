@@ -29,7 +29,7 @@ func InsertSnippet(c *gin.Context) {
 	var snippetInput SnippetInput
 
 	// Validate input
-	if err := c.ShouldBind(&snippetInput); err != nil {
+	if err := c.BindJSON(&snippetInput); err != nil {
 		klog.Error(err)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -43,9 +43,6 @@ func InsertSnippet(c *gin.Context) {
 		snippet: snippetInput.snippet,
 		url: fmt.Sprintf("%s/%s", snippetsUrl, snippetInput.name),
 	}
-
-	klog.Info(snippetInput)
-	klog.Info(snippet)
 
 	// Insert into db/save to disk
 
